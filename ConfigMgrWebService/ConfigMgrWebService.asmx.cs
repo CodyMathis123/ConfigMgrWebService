@@ -1217,7 +1217,7 @@ namespace ConfigMgrWebService
                     DirectoryEntry Location = new DirectoryEntry("LDAP://" + DC + "/" + OU);
                     DirectoryEntry newComputer = Location.Children.Add("CN=" + computerName, "computer");
                     newComputer.Properties["samAccountName"].Value = computerName + "$";
-                    newComputer.Properties["dnsHostName"].Value = computerName + ".dartcontainer.com";
+                    newComputer.Properties["dnsHostName"].Value = computerName + ".fabrikom.com";
                     newComputer.Properties["description"].Value = computerDescription;
                     newComputer.Properties["userAccountControl"].Value = "4096";
                     newComputer.CommitChanges();
@@ -2433,7 +2433,7 @@ namespace ConfigMgrWebService
 
         private UserPrincipal GetUser(string sUserName, string DC)
         {
-            PrincipalContext oPrincipalContext = new PrincipalContext(ContextType.Domain, DC, "dc=dartcontainer,dc=com");
+            PrincipalContext oPrincipalContext = new PrincipalContext(ContextType.Domain, DC, "dc=fabrikom,dc=com");
 
             UserPrincipal oUserPrincipal =
                 UserPrincipal.FindByIdentity(oPrincipalContext, sUserName);
@@ -2442,7 +2442,7 @@ namespace ConfigMgrWebService
 
         private ComputerPrincipal GetComputer(string sComputerName, string DC)
         {
-            PrincipalContext oPrincipalContext = new PrincipalContext(ContextType.Domain, DC, "dc=dartcontainer,dc=com");
+            PrincipalContext oPrincipalContext = new PrincipalContext(ContextType.Domain, DC, "dc=fabrikom,dc=com");
 
             ComputerPrincipal oComputerPrincipal =
                ComputerPrincipal.FindByIdentity(oPrincipalContext, sComputerName);
@@ -2451,7 +2451,7 @@ namespace ConfigMgrWebService
 
         private GroupPrincipal GetGroup(string sGroupName, string DC)
         {
-            PrincipalContext oPrincipalContext = new PrincipalContext(ContextType.Domain, DC, "dc=dartcontainer,dc=com");
+            PrincipalContext oPrincipalContext = new PrincipalContext(ContextType.Domain, DC, "dc=fabrikom,dc=com");
 
             GroupPrincipal oGroupPrincipal =
                GroupPrincipal.FindByIdentity(oPrincipalContext, sGroupName);
@@ -2466,7 +2466,7 @@ namespace ConfigMgrWebService
 
             //' Get default naming context of current domain
             //string defaultNamingContext = GetADDefaultNamingContext();
-            string defaultNamingContext = "LDAP://" + domainController + "/dc=dartcontainer,dc=com";
+            string defaultNamingContext = "LDAP://" + domainController + "/dc=fabrikom,dc=com";
             //string currentDomain = String.Format("LDAP://{0}", defaultNamingContext);
 
             //' Construct directory entry for directory searcher
