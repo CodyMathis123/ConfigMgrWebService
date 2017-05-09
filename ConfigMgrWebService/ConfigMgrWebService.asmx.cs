@@ -1390,8 +1390,8 @@ namespace ConfigMgrWebService
                 }
 
                 DirectoryContext siteContext = new DirectoryContext(DirectoryContextType.Forest);
-                Forest dartForest = Forest.GetForest(siteContext);
-                foreach (ActiveDirectorySite site in dartForest.Sites)
+                Forest getForest = Forest.GetForest(siteContext);
+                foreach (ActiveDirectorySite site in getForest.Sites)
                 {
                     List<string> subnets = new List<string>();
                     List<string> servers = new List<string>();
