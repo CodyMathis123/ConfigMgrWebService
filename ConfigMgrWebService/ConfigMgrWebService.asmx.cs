@@ -31,8 +31,8 @@ namespace ConfigMgrWebService
         private string sqlServer = WebConfigurationManager.AppSettings["SQLServer"];
         private string sqlInstance = WebConfigurationManager.AppSettings["SQLInstance"];
         private string mdtDatabase = WebConfigurationManager.AppSettings["MDTDatabase"];
-        private string RootOU = WebConfigurationManager.AppSettings["RootOU"];
-        private string domainName = WebConfigurationManager.Appsettings["domainName"];
+        private string rootOU = WebConfigurationManager.AppSettings["rootOU"];
+        private string domainName = WebConfigurationManager.AppSettings["domainName"];
 
         //' Enums
         public enum ADObjectClass
@@ -1219,7 +1219,7 @@ namespace ConfigMgrWebService
                     DirectoryEntry Location = new DirectoryEntry("LDAP://" + DC + "/" + OU);
                     DirectoryEntry newComputer = Location.Children.Add("CN=" + computerName, "computer");
                     newComputer.Properties["samAccountName"].Value = computerName + "$";
-                    newComputer.Properties["dnsHostName"].Value = computerName + domainName;
+                    newComputer.Properties["dnsHostName"].Value = computerName + "." + domainName;
                     newComputer.Properties["description"].Value = computerDescription;
                     newComputer.Properties["userAccountControl"].Value = "4096";
                     newComputer.CommitChanges();
@@ -1392,8 +1392,8 @@ namespace ConfigMgrWebService
                 }
 
                 DirectoryContext siteContext = new DirectoryContext(DirectoryContextType.Forest);
-                Forest getForest = Forest.GetForest(siteContext);
-                foreach (ActiveDirectorySite site in getForest.Sites)
+                Forest oForest = Forest.GetForest(siteContext);
+                foreach (ActiveDirectorySite site in oForest.Sites)
                 {
                     List<string> subnets = new List<string>();
                     List<string> servers = new List<string>();
@@ -2467,9 +2467,7 @@ namespace ConfigMgrWebService
             SearchResult searchResult = null;
 
             //' Get default naming context of current domain
-            //string defaultNamingContext = GetADDefaultNamingContext();
             string defaultNamingContext = "LDAP://" + domainController + "/" + rootOU;
-            //string currentDomain = String.Format("LDAP://{0}", defaultNamingContext);
 
             //' Construct directory entry for directory searcher
             DirectoryEntry domain = new DirectoryEntry(defaultNamingContext);
@@ -2545,10 +2543,10 @@ namespace ConfigMgrWebService
                 }
 
                 DirectoryContext siteContext = new DirectoryContext(DirectoryContextType.Forest);
-                Forest dartForest = Forest.GetForest(siteContext);
+                Forest oForest = Forest.GetForest(siteContext);
 
                 Int64 iIPAddressInDecimal = IPAddressToDecimal(strIPAddress);
-                foreach (ActiveDirectorySite site in dartForest.Sites)
+                foreach (ActiveDirectorySite site in oForest.Sites)
                 {
                     foreach (ActiveDirectorySubnet subnet in site.Subnets)
                     {
