@@ -12,6 +12,7 @@ namespace ConfigMgrWebService
         public string PackageManufacturer { get; set; }
         public string PackageLanguage { get; set; }
         public string PackageVersion { get; set; }
+        public string PackageDescription { get; set; }
         public DateTime PackageCreated { get; set; }
     }
 }
