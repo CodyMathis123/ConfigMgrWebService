@@ -813,9 +813,16 @@ namespace ConfigMgrWebService
                         //' Define objects for properties
                         string packageName = driverPackage["Name"].StringValue;
                         string packageId = driverPackage["PackageID"].StringValue;
+                        string packageVersion = driverPackage["Version"].StringValue;
+                        string packageDescription = driverPackage["Description"].StringValue;
 
                         //' Add new driver package object to list
-                        driverPackage drvPkg = new driverPackage { PackageName = packageName, PackageID = packageId };
+                        driverPackage drvPkg = new driverPackage {
+                            PackageName = packageName,
+                            PackageID = packageId,
+                            PackageVersion = packageVersion,
+                            PackageDescription = packageDescription
+                        };
                         pkgList.Add(drvPkg);
                     }
                 }
@@ -855,6 +862,7 @@ namespace ConfigMgrWebService
                         string packageManufacturer = package["Manufacturer"].StringValue;
                         string packageLanguage = package["Language"].StringValue;
                         string packageVersion = package["Version"].StringValue;
+                        string packageDescription = package["Description"].StringValue;
                         DateTime packageCreated = package["SourceDate"].DateTimeValue;
 
                         //' Add new package object to list
@@ -864,6 +872,7 @@ namespace ConfigMgrWebService
                             PackageManufacturer = packageManufacturer,
                             PackageLanguage = packageLanguage,
                             PackageVersion = packageVersion,
+                            PackageDescription = packageDescription,
                             PackageCreated = packageCreated
                         };
                         pkgList.Add(pkg);
@@ -1410,6 +1419,74 @@ namespace ConfigMgrWebService
                 return adSites;
             }
             return null;
+        }
+
+        [WebMethod(Description = "Return domain controller determined from AD Sites and Services based on IP Address")]
+        public String GetDCFromIP(string secret, String strIPAddress)
+        {
+            //' Validate secret key
+            if (secret == secretKey)
+            {
+                String strDC = String.Empty;
+
+                string configurationNamingContext;
+                using (DirectoryEntry rootDSE = new DirectoryEntry("LDAP://RootDSE"))
+                {
+                    configurationNamingContext = rootDSE.Properties["configurationNamingContext"].Value.ToString();
+                }
+
+                DirectoryContext siteContext = new DirectoryContext(DirectoryContextType.Forest);
+                Forest dartForest = Forest.GetForest(siteContext);
+
+                Int64 iIPAddressInDecimal = IPAddressToDecimal(strIPAddress);
+                foreach (ActiveDirectorySite site in dartForest.Sites)
+                {
+                    foreach (ActiveDirectorySubnet subnet in site.Subnets)
+                    {
+                        String strSubnetName = subnet.ToString();
+                        char[] charSplitter = { '/' };
+                        String[] strArraySplittedSubnetName = strSubnetName.Split(charSplitter);
+                        if (2 == strArraySplittedSubnetName.Length)
+                        {
+                            Int32 iSubnetMask = Int32.Parse(strArraySplittedSubnetName[1]);
+                            Int32 iNumberOfAddresses = (Int32)Math.Pow(2, (32 - iSubnetMask)) - 1;
+                            String strIPRange = strArraySplittedSubnetName[0];
+                            Int64 iLowIPAddress = IPAddressToDecimal(strIPRange);
+                            Int64 iHighIPAddress = iLowIPAddress + iNumberOfAddresses;
+                            Int64 iTotalIPAddressCount = ((Int64)Math.Pow(2, 31)) - 1;
+                            if (iLowIPAddress <= iIPAddressInDecimal && iIPAddressInDecimal <= iHighIPAddress && iNumberOfAddresses <= iTotalIPAddressCount)
+                            {
+                                strDC = subnet.Site.Servers[0].ToString();
+                            }
+                        }
+                    }
+                }
+                return strDC.Trim();
+            }
+            return null;
+        }
+
+        [WebMethod(Description = "Check if user can authenticate against AD.")]
+        public bool AuthenticateADUser(string secret, string userName, string password)
+        {
+            //' Validate secret key
+            if (secret == secretKey)
+            {
+
+                try
+                {
+                    PrincipalContext domain = new PrincipalContext(ContextType.Domain);
+                    bool authenticated = domain.ValidateCredentials(userName, password);
+                    return authenticated;
+                }
+                catch (Exception ex)
+                {
+                    WriteEventLog(String.Format("Could not authenticate user. Error message: {0}", ex.Message), EventLogEntryType.Error);
+                    return false;
+                }
+            }
+
+            return false;
         }
 
         [WebMethod(Description = "Get MDT roles from database (Application Pool identity needs access permissions to the specified MDT database)")]
@@ -2527,51 +2604,5 @@ namespace ConfigMgrWebService
             (Int32.Parse(strArrayIPAddress[2]) * Math.Pow(2, 8) +
             (Int32.Parse(strArrayIPAddress[3]))))));
         }
-
-        [WebMethod(Description = "Return location determined from AD Sites and Services based on IP Address")]
-        public String GetDCFromIP(string secret, String strIPAddress)
-        {
-            //' Validate secret key
-            if (secret == secretKey)
-            {
-                String strDC = String.Empty;
-
-                string configurationNamingContext;
-                using (DirectoryEntry rootDSE = new DirectoryEntry("LDAP://RootDSE"))
-                {
-                    configurationNamingContext = rootDSE.Properties["configurationNamingContext"].Value.ToString();
-                }
-
-                DirectoryContext siteContext = new DirectoryContext(DirectoryContextType.Forest);
-                Forest oForest = Forest.GetForest(siteContext);
-
-                Int64 iIPAddressInDecimal = IPAddressToDecimal(strIPAddress);
-                foreach (ActiveDirectorySite site in oForest.Sites)
-                {
-                    foreach (ActiveDirectorySubnet subnet in site.Subnets)
-                    {
-                        String strSubnetName = subnet.ToString();
-                        char[] charSplitter = { '/' };
-                        String[] strArraySplittedSubnetName = strSubnetName.Split(charSplitter);
-                        if (2 == strArraySplittedSubnetName.Length)
-                        {
-                            Int32 iSubnetMask = Int32.Parse(strArraySplittedSubnetName[1]);
-                            Int32 iNumberOfAddresses = (Int32)Math.Pow(2, (32 - iSubnetMask)) - 1;
-                            String strIPRange = strArraySplittedSubnetName[0];
-                            Int64 iLowIPAddress = IPAddressToDecimal(strIPRange);
-                            Int64 iHighIPAddress = iLowIPAddress + iNumberOfAddresses;
-                            Int64 iTotalIPAddressCount = ((Int64)Math.Pow(2, 31)) - 1;
-                            if (iLowIPAddress <= iIPAddressInDecimal && iIPAddressInDecimal <= iHighIPAddress && iNumberOfAddresses <= iTotalIPAddressCount)
-                            {
-                                strDC = subnet.Site.Servers[0].ToString();
-                            }
-                        }
-                    }
-                }
-                return strDC.Trim();
-            }
-            return null;
-        }
-
     }
 }
