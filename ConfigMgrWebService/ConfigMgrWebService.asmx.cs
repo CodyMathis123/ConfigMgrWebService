@@ -84,16 +84,14 @@ namespace ConfigMgrWebService
         [WebMethod(Description = "Get primary user(s) for a specific device")]
         public List<string> GetCMPrimaryUserByDevice(string deviceName, string secret)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct relation list
             var relations = new List<string>();
 
             //' Validate secret key
-            if (secret != secretKey)
-            {
-                relations.Add("A secret key was not specified or cannot be validated");
-                return relations;
-            }
-            else
+            if (secret == secretKey)
             {
                 //' Query for user relationship instances
                 SelectQuery relationQuery = new SelectQuery("SELECT * FROM SMS_UserMachineRelationship WHERE ResourceName like '" + deviceName + "'");
@@ -102,30 +100,31 @@ namespace ConfigMgrWebService
                 ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(managementScope, relationQuery);
 
                 if (managementObjectSearcher != null)
+                {
                     foreach (var userRelation in managementObjectSearcher.Get())
                     {
-                        //' Return user name
+                        //' Get user name
                         string userName = (string)userRelation.GetPropertyValue("UniqueUserName");
                         relations.Add(userName);
                     }
-                //' Return empty
-                return relations;
+                }
             }
+
+            MethodEnd(method);
+            return relations;
         }
 
         [WebMethod(Description = "Get primary device(s) for a specific user")]
         public List<string> GetCMPrimaryDeviceByUser(string userName, string secret)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct relation list
             var relations = new List<string>();
 
             //' Validate secret key
-            if (secret != secretKey)
-            {
-                relations.Add("A secret key was not specified or cannot be validated");
-                return relations;
-            }
-            else
+            if (secret == secretKey)
             {
                 //' Query for device relationship instances
                 SelectQuery relationQuery = new SelectQuery("SELECT * FROM SMS_UserMachineRelationship WHERE ResourceName like '" + userName + "'");
@@ -134,29 +133,31 @@ namespace ConfigMgrWebService
                 ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(managementScope, relationQuery);
 
                 if (managementObjectSearcher != null)
+                {
                     foreach (var deviceRelation in managementObjectSearcher.Get())
                     {
-                        //' Return device name
+                        //' Get device name
                         string deviceName = (string)deviceRelation.GetPropertyValue("ResourceName");
                         relations.Add(deviceName);
                     }
-                //' Return empty
-                return relations;
+                }
             }
+
+            MethodEnd(method);
+            return relations;
         }
 
         [WebMethod(Description = "Get deployed applications for a specific user")]
         public List<CMApplication> GetCMDeployedApplicationsByUser(string userName, string secret)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct applications list
             var applicationNames = new List<CMApplication>();
 
             //' Validate secret key
-            if (secret != secretKey)
-            {
-                return null;
-            }
-            else
+            if (secret == secretKey)
             {
                 //' Query for specified user
                 SelectQuery userQuery = new SelectQuery("SELECT * FROM SMS_R_User WHERE UserName like '" + userName + "'");
@@ -165,7 +166,9 @@ namespace ConfigMgrWebService
                 ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(managementScope, userQuery);
 
                 if (managementObjectSearcher.Get() != null)
+                {
                     if (managementObjectSearcher.Get().Count == 1)
+                    {
                         foreach (ManagementObject user in managementObjectSearcher.Get())
                         {
                             //' Define properties from user
@@ -177,6 +180,7 @@ namespace ConfigMgrWebService
                             ManagementObjectSearcher collMembershipSearcher = new ManagementObjectSearcher(managementScope, collMembershipQuery);
 
                             if (collMembershipSearcher.Get() != null)
+                            {
                                 foreach (ManagementObject collUser in collMembershipSearcher.Get())
                                 {
                                     //' Define properties for collection
@@ -187,6 +191,7 @@ namespace ConfigMgrWebService
                                     ManagementObjectSearcher collectionSearcher = new ManagementObjectSearcher(managementScope, collectionQuery);
 
                                     if (collectionSearcher.Get() != null)
+                                    {
                                         foreach (ManagementObject collection in collectionSearcher.Get())
                                         {
                                             //' Define properties for collection
@@ -197,6 +202,7 @@ namespace ConfigMgrWebService
                                             ManagementObjectSearcher deploymentInfoSearcher = new ManagementObjectSearcher(managementScope, deploymentInfoQuery);
 
                                             if (deploymentInfoSearcher.Get() != null)
+                                            {
                                                 foreach (ManagementObject deployment in deploymentInfoSearcher.Get())
                                                 {
                                                     //' Return application object
@@ -207,27 +213,31 @@ namespace ConfigMgrWebService
                                                     targetApplication.CollectionName = collectionName;
                                                     applicationNames.Add(targetApplication);
                                                 }
+                                            }
                                         }
+                                    }
                                 }
+                            }
                         }
-                //' Return empty
-                return applicationNames;
+                    }
+                }
             }
+
+            MethodEnd(method);
+            return applicationNames;
         }
 
         [WebMethod(Description = "Get deployed applications for a specific device")]
         public List<string> GetCMDeployedApplicationsByDevice(string deviceName, string secret)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct applications list
-            var applicationNames = new List<string>();
+            List<string> applicationNames = new List<string>();
 
             //' Validate secret key
-            if (secret != secretKey)
-            {
-                applicationNames.Add("A secret key was not specified or cannot be validated");
-                return applicationNames;
-            }
-            else
+            if (secret == secretKey)
             {
                 //' Query for specified device name
                 SelectQuery deviceQuery = new SelectQuery("SELECT * FROM SMS_R_System WHERE Name like '" + deviceName + "'");
@@ -236,7 +246,9 @@ namespace ConfigMgrWebService
                 ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(managementScope, deviceQuery);
 
                 if (managementObjectSearcher.Get() != null)
+                {
                     if (managementObjectSearcher.Get().Count == 1)
+                    {
                         foreach (ManagementObject device in managementObjectSearcher.Get())
                         {
                             //' Define property variables from device
@@ -248,6 +260,7 @@ namespace ConfigMgrWebService
                             ManagementObjectSearcher collMembershipSearcher = new ManagementObjectSearcher(managementScope, collMembershipQuery);
 
                             if (collMembershipSearcher.Get() != null)
+                            {
                                 foreach (ManagementObject collDevice in collMembershipSearcher.Get())
                                 {
                                     //' Define property variables for collection
@@ -258,6 +271,7 @@ namespace ConfigMgrWebService
                                     ManagementObjectSearcher collectionSearcher = new ManagementObjectSearcher(managementScope, collectionQuery);
 
                                     if (collectionSearcher.Get() != null)
+                                    {
                                         foreach (ManagementObject collection in collectionSearcher.Get())
                                         {
                                             //' Define collection properties
@@ -268,18 +282,25 @@ namespace ConfigMgrWebService
                                             ManagementObjectSearcher deploymentInfoSearcher = new ManagementObjectSearcher(managementScope, deploymentInfoQuery);
 
                                             if (deploymentInfoSearcher.Get() != null)
+                                            {
                                                 foreach (ManagementObject deployment in deploymentInfoSearcher.Get())
                                                 {
                                                     //' Return application name
                                                     string targetName = (string)deployment.GetPropertyValue("TargetName");
                                                     applicationNames.Add(targetName);
                                                 }
+                                            }
                                         }
+                                    }
                                 }
+                            }
                         }
-                //' Return empty
-                return applicationNames;
+                    }
+                }
             }
+
+            MethodEnd(method);
+            return applicationNames;
         }
 
         [WebMethod(Description = "Get all hidden task sequence deployments")]
@@ -381,6 +402,42 @@ namespace ConfigMgrWebService
 
                 //' Query for device resource
                 string query = String.Format("SELECT * FROM SMS_R_System WHERE MacAddresses like '{0}'", macAddress);
+                IResultObject result = connection.QueryProcessor.ExecuteQuery(query);
+
+                string resourceId = string.Empty;
+
+                if (result != null)
+                {
+                    foreach (IResultObject device in result)
+                    {
+                        int id = device["ResourceId"].IntegerValue;
+                        returnValue = id.ToString();
+                    }
+                }
+            }
+
+            MethodEnd(method);
+            return returnValue;
+        }
+
+        [WebMethod(Description = "Get resource id for a built-in unknown computer object by UUID (SMSBIOSGUID)")]
+        public string GetCMUnknownComputerResourceIDByUUID(string secret, string uuid)
+        {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            string returnValue = string.Empty;
+
+            //' Validate secret key
+            if (secret == secretKey)
+            {
+                //' Connect to SMS Provider
+                SmsProvider smsProvider = new SmsProvider();
+                WqlConnectionManager connection = smsProvider.Connect(siteServer);
+
+                //' Query for unknown computer resource
+                string query = String.Format("SELECT * FROM SMS_R_UnknownSystem WHERE SMSUniqueIdentifier like '{0}'", uuid);
                 IResultObject result = connection.QueryProcessor.ExecuteQuery(query);
 
                 string resourceId = string.Empty;
@@ -763,6 +820,9 @@ namespace ConfigMgrWebService
         [WebMethod(Description = "Get all or a filtered list of device collections")]
         public List<string> GetCMDeviceCollections(string secret, string filter = null)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct list object
             List<string> collectionList = new List<string>();
 
@@ -793,18 +853,21 @@ namespace ConfigMgrWebService
                         collectionList.Add(collection["Name"].StringValue);
                     }
                 }
+            }
 
-                return collectionList;
-            }
-            else
-            {
-                return null;
-            }
+            MethodEnd(method);
+            return collectionList;
         }
 
         [WebMethod(Description = "Update membership of a specific collection")]
         public bool UpdateCMCollectionMembership(string secret, string collectionId)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -826,17 +889,14 @@ namespace ConfigMgrWebService
 
                         if (exec["ReturnValue"].IntegerValue == 0)
                         {
-                            return true;
+                            returnValue = true;
                         }
                     }
                 }
+            }
 
-                return false;
-            }
-            else
-            {
-                return false;
-            }
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Get Driver Package information by computer model")]
@@ -867,7 +927,8 @@ namespace ConfigMgrWebService
                         string packageDescription = driverPackage["Description"].StringValue;
 
                         //' Add new driver package object to list
-                        CMDriverPackage drvPkg = new CMDriverPackage {
+                        CMDriverPackage drvPkg = new CMDriverPackage
+                        {
                             PackageName = packageName,
                             PackageID = packageId,
                             PackageVersion = packageVersion,
@@ -916,7 +977,8 @@ namespace ConfigMgrWebService
                         DateTime packageCreated = package["SourceDate"].DateTimeValue;
 
                         //' Add new package object to list
-                        CMPackage pkg = new CMPackage {
+                        CMPackage pkg = new CMPackage
+                        {
                             PackageName = packageName,
                             PackageID = packageId,
                             PackageManufacturer = packageManufacturer,
@@ -940,6 +1002,9 @@ namespace ConfigMgrWebService
         [WebMethod(Description = "Check for 'Unknown' device record by UUID (SMBIOS GUID)")]
         public List<string> GetCMUnknownDeviceByUUID(string secret, string uuid)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct list for unknown device resource ids
             List<string> resourceIds = new List<string>();
 
@@ -963,13 +1028,10 @@ namespace ConfigMgrWebService
                         resourceIds.Add(resourceId);
                     }
                 }
+            }
 
-                return resourceIds;
-            }
-            else
-            {
-                return resourceIds;
-            }
+            MethodEnd(method);
+            return resourceIds;
         }
 
         [WebMethod(Description = "Retrieve the associated OS Image version for a specific task sequence (supports multiple images)")]
@@ -1045,6 +1107,9 @@ namespace ConfigMgrWebService
         [WebMethod(Description = "Delete 'Unknown' device record by UUID (SMBIOS GUID)")]
         public int RemoveCMUnknownDeviceByUUID(string secret, string uuid)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Variable for amount of removed records
             int records = 0;
 
@@ -1068,13 +1133,10 @@ namespace ConfigMgrWebService
                         records++;
                     }
                 }
+            }
 
-                return records;
-            }
-            else
-            {
-                return records;
-            }
+            MethodEnd(method);
+            return records;
         }
 
         [WebMethod(Description = "Remove a device from a specific collection (only for Direct Membership rules")]
@@ -1320,6 +1382,9 @@ namespace ConfigMgrWebService
         [WebMethod(Description = "Get deployed applications by collection ID")]
         public List<string> GetCMApplicationDeploymentsByCollectionID(string secret, string collId)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct new list for application deployments
             List<string> appDeployments = new List<string>();
 
@@ -1334,7 +1399,6 @@ namespace ConfigMgrWebService
                 string query = String.Format("SELECT * FROM SMS_DeploymentInfo WHERE CollectionID like '{0}' AND DeploymentTypeID like '2'", collId);
                 IResultObject deployments = connection.QueryProcessor.ExecuteQuery(query);
 
-                //' 
                 if (deployments != null)
                 {
                     foreach (IResultObject deployment in deployments)
@@ -1344,13 +1408,10 @@ namespace ConfigMgrWebService
                     }
                     appDeployments.Sort();
                 }
+            }
 
-                return appDeployments;
-            }
-            else
-            {
-                return appDeployments;
-            }
+            MethodEnd(method);
+            return appDeployments;
         }
 
         [WebMethod(Description = "Get all collections a specific device is a member of by UUID (SMBIOS GUID)")]
@@ -1401,6 +1462,12 @@ namespace ConfigMgrWebService
         [WebMethod(Description = "Move a computer in Active Directory to a specific organizational unit")]
         public bool SetADOrganizationalUnitForComputer(string secret, string organizationalUnitLocation, string computerName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1422,22 +1489,28 @@ namespace ConfigMgrWebService
                         DirectoryEntry newLocation = new DirectoryEntry(organizationalUnitLocation);
                         currentObject.MoveTo(newLocation, currentObject.Name);
 
-                        return true;
+                        returnValue =  true;
                     }
                     catch (Exception ex)
                     {
                         WriteEventLog(String.Format("An error occured when attempting to move Active Directory object. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                        return false;
                     }
                 }
             }
 
-            return false;
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Add a computer in Active Directory to a specific group")]
         public bool AddADComputerToGroup(string secret, string groupName, string computerName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1457,22 +1530,28 @@ namespace ConfigMgrWebService
                         //' Dispose object
                         groupEntry.Dispose();
 
-                        return true;
+                        returnValue = true;
                     }
                     catch (Exception ex)
                     {
                         WriteEventLog(String.Format("An error occured when attempting to add a computer object in Active Directory to a group. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                        return false;
                     }
                 }
             }
 
-            return false;
+            return returnValue;
+            MethodEnd(method);
         }
 
         [WebMethod(Description = "Remove a computer in Active Directory from a specific group")]
         public bool RemoveADComputerFromGroup(string secret, string groupName, string computerName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1492,22 +1571,28 @@ namespace ConfigMgrWebService
                         //' Dispose object
                         groupEntry.Dispose();
 
-                        return true;
+                        returnValue = true;
                     }
                     catch (Exception ex)
                     {
                         WriteEventLog(String.Format("An error occured when attempting to remove a computer object in Active Directory from a group. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                        return false;
                     }
                 }
             }
 
-            return false;
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Check if an AD computer is a member of a specific group.")]
         public bool CheckADComputerGroupMembership(string secret, string groupName, string computerName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1518,22 +1603,28 @@ namespace ConfigMgrWebService
                 {
                     try
                     {
-                        return oGroupPrincipal.Members.Contains(oComputerPrincipal);
+                        returnValue = oGroupPrincipal.Members.Contains(oComputerPrincipal);
                     }
                     catch (Exception ex)
                     {
                         WriteEventLog(String.Format("An error occured when attempting verify group membership for a computer. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                        return false;
                     }
                 }
             }
 
-            return false;
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Get the description field for a computer in Active Directory")]
         public string GetADComputerDescription(string secret, string computerName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            string returnValue = string.Empty;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1548,7 +1639,7 @@ namespace ConfigMgrWebService
                         //' Get computer object description
                         DirectoryEntry computerEntry = new DirectoryEntry(computerDistinguishedName);
                         string computerDescription = computerEntry.Properties["description"].Value.ToString();
-                        return computerDescription;
+                        returnValue = computerDescription;
 
                     }
                     catch (Exception ex)
@@ -1556,18 +1647,27 @@ namespace ConfigMgrWebService
                         WriteEventLog(String.Format("An error occured when attempting to remove a computer object in Active Directory from a group. Error message: {0}", ex.Message), EventLogEntryType.Error);
                     }
                 }
-                return null;
+                returnValue = null;
             }
             else
             {
                 //' Return null when secret key is not passed correctly
-                return null;
+                returnValue = null;
             }
+
+        MethodEnd(method);
+        return returnValue;
         }
 
         [WebMethod(Description = "Set the description field for a computer in Active Directory")]
         public bool SetADComputerDescription(string secret, string computerName, string description, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1586,7 +1686,7 @@ namespace ConfigMgrWebService
                         //' Dispose object
                         computerEntry.Dispose();
 
-                        return true;
+                        returnValue = true;
                     }
                     catch (Exception ex)
                     {
@@ -1595,12 +1695,19 @@ namespace ConfigMgrWebService
                 }
             }
 
-            return false;
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Check for existance of an AD computer")]
         public bool GetADComputerExistance(string secret, string computerName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1611,7 +1718,7 @@ namespace ConfigMgrWebService
                 {
                     try
                     {
-                        return DirectoryEntry.Exists(computerDistinguishedName);
+                        returnValue = DirectoryEntry.Exists(computerDistinguishedName);
                     }
                     catch (Exception ex)
                     {
@@ -1620,18 +1727,22 @@ namespace ConfigMgrWebService
                 }
             }
 
-            return false;
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Get AD Computer Information")]
         public List<ADComputer> GetADComputerInformation(string secret, string computerName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Construct new list for groups
+            List<ADComputer> computerInfo = new List<ADComputer>();
+
             //' Validate secret key
             if (secret == secretKey)
             {
-
-                //' Construct new list for groups
-                List<ADComputer> computerInfo = new List<ADComputer>();
 
                 //' Get AD object distinguished name for computer
                 string computerDistinguishedName = GetADObject(computerName, ADObjectClass.Computer, ADObjectType.distinguishedName, DC);
@@ -1645,7 +1756,6 @@ namespace ConfigMgrWebService
                         string computerDescription = computerEntry.Properties["description"].Value.ToString();
                         string computerOperatingSystem = computerEntry.Properties["operatingSystem"].Value.ToString();
                         computerInfo.Add(new ADComputer(computerDescription,computerDistinguishedName,computerOperatingSystem));
-                        return computerInfo;
                     }
                     catch (Exception ex)
                     {
@@ -1654,12 +1764,19 @@ namespace ConfigMgrWebService
                 }
             }
 
-            return null;
+            MethodEnd(method);
+            return computerInfo;
         }
 
         [WebMethod(Description = "Add a computer to AD")]
         public bool AddADComputer(string secret, string computerName, string computerDescription, string OU, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1675,7 +1792,7 @@ namespace ConfigMgrWebService
                     //' Dispose object
                     newComputer.Dispose();
 
-                    return true;
+                    returnValue = true;
                 }
                 catch (Exception ex)
                 {
@@ -1683,12 +1800,15 @@ namespace ConfigMgrWebService
                 }
             }
 
-            return false;
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Return all AD Groups in a specified OU. This is recursive.")]
         public List<ADGroup> GetADGroupsByOU(string secret, string Filter, string SearchBase, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
 
             //' Construct new list for groups
             List<ADGroup> appGroups = new List<ADGroup>();
@@ -1708,12 +1828,16 @@ namespace ConfigMgrWebService
                 }
                 appGroups = appGroups.OrderBy(g => g.name).ToList();
             }
+
+            MethodEnd(method);
             return appGroups;
         }
 
         [WebMethod(Description = "Return all AD Users that match a filter on display name.")]
         public List<ADUser> GetADUsersFilteredByDisplayName(string secret, string filter, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
 
             //' Construct new list for the users
             List<ADUser> adUsers = new List<ADUser>();
@@ -1739,12 +1863,16 @@ namespace ConfigMgrWebService
                 }
                 adUsers = adUsers.OrderBy(u => u.displayName).ToList();
             }
+
+            MethodEnd(method);
             return adUsers;
         }
 
         [WebMethod(Description = "Return all AD Users that match a filter on samAccountName.")]
         public List<ADUser> GetADUsersFilteredBySamAccountName(string secret, string filter, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
 
             //' Construct new list for the users
             List<ADUser> adUsers = new List<ADUser>();
@@ -1770,12 +1898,20 @@ namespace ConfigMgrWebService
                 }
                 adUsers = adUsers.OrderBy(u => u.displayName).ToList();
             }
+
+            MethodEnd(method);
             return adUsers;
         }
 
         [WebMethod(Description = "Check if AD user is a member of specified group.")]
         public bool CheckADUserGroupMembership(string secret, string userName, string groupName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1784,23 +1920,27 @@ namespace ConfigMgrWebService
                 GroupPrincipal oGroupPrincipal = GetGroup(groupName, DC);
                 try
                 {
-
-                    return oGroupPrincipal.Members.Contains(oUserPrincipal);
-
+                    returnValue = oGroupPrincipal.Members.Contains(oUserPrincipal);
                 }
                 catch (Exception ex)
                 {
                     WriteEventLog(String.Format("An error occured when attempting verify group membership for a user. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                    return false;
                 }
             }
 
-            return false;
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Return an AD computers parent path")]
         public string GetADObjectParentPath(string secret, string objectName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            string returnValue = string.Empty;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1831,7 +1971,7 @@ namespace ConfigMgrWebService
                     {
                         DirectoryEntry objectDE = new DirectoryEntry(objectDN);
                         string objectParentPath = objectDE.Parent.Path.ToString().Remove(0, 7);
-                        return objectParentPath;
+                        returnValue = objectParentPath;
                     }
                     catch (Exception ex)
                     {
@@ -1839,16 +1979,23 @@ namespace ConfigMgrWebService
                     }
                 }
             }
-            return null;
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Return a list Computer Group Memberships")]
         public List<string> GetADComputerGroupMembership(string secret, string computerName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            List<string> computerGroups = new List<string>();
+
             //' Validate secret key
             if (secret == secretKey)
             {
-                List<string> computerGroups = new List<string>();
                 string computerDistinguishedName = GetADObject(computerName, ADObjectClass.Computer, ADObjectType.distinguishedName, DC);
 
                 if (!String.IsNullOrEmpty(computerDistinguishedName))
@@ -1862,15 +2009,21 @@ namespace ConfigMgrWebService
                     }
                     computerGroups.Sort();
                 }
-                return computerGroups;
             }
-            return null;
+
+            MethodEnd(method);
+            return computerGroups;
         }
 
         [WebMethod(Description = "Return a list of OU and their immediate child OU")]
         public List<ADOU> GetADOrganizationalUnits(string secret, string BaseOU, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
             List<ADOU> orgUnits = new List<ADOU>();
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1896,20 +2049,24 @@ namespace ConfigMgrWebService
                         }
                         orgUnits.Add(new ADOU(ouChildren, res.Properties["name"][0].ToString(), res.Path.Remove(0, RemoveLength)));
                     }
-                    return orgUnits;
                 }
                 catch (Exception ex)
                 {
                     WriteEventLog(String.Format("Could not enumerate OUs. Error message: {0}", ex.Message), EventLogEntryType.Error);
                 }
             }
-            return null;
+            return orgUnits;
         }
 
         [WebMethod(Description = "Return all discoverable AD sites and their respective subnets, and domain controllers")]
         public List<ADSites> GetADSites(string secret)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
             List<ADSites> adSites = new List<ADSites>();
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -1935,19 +2092,22 @@ namespace ConfigMgrWebService
                     }
                     adSites.Add(new ADSites(site.Name.ToString(), servers, subnets));
                 }
-                return adSites;
             }
-            return null;
+            return adSites;
         }
 
         [WebMethod(Description = "Return domain controller determined from AD Sites and Services based on IP Address")]
         public String GetDCFromIP(string secret, String strIPAddress)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            String strDC = String.Empty;
+
             //' Validate secret key
             if (secret == secretKey)
             {
-                String strDC = String.Empty;
-
                 string configurationNamingContext;
                 using (DirectoryEntry rootDSE = new DirectoryEntry("LDAP://RootDSE"))
                 {
@@ -1980,37 +2140,49 @@ namespace ConfigMgrWebService
                         }
                     }
                 }
-                return strDC.Trim();
             }
-            return null;
+
+            MethodEnd(method);
+            return strDC.Trim();
         }
 
         [WebMethod(Description = "Check if user can authenticate against AD.")]
         public bool AuthenticateADUser(string secret, string userName, string password)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
-
                 try
                 {
                     PrincipalContext domain = new PrincipalContext(ContextType.Domain);
                     bool authenticated = domain.ValidateCredentials(userName, password);
-                    return authenticated;
+                    returnValue = authenticated;
                 }
                 catch (Exception ex)
                 {
                     WriteEventLog(String.Format("Could not authenticate user. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                    return false;
                 }
             }
 
-            return false;
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Return a users email address based on their username.")]
         public string GetADUserEmailAddress(string secret, string userName, string DC)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            string returnValue = string.Empty;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2025,7 +2197,7 @@ namespace ConfigMgrWebService
                         //' Get computer object description
                         DirectoryEntry userEntry = new DirectoryEntry(userDistinguishedName);
                         string userEmail = userEntry.Properties["mail"].Value.ToString();
-                        return userEmail;
+                        returnValue = userEmail;
                     }
                     catch (Exception ex)
                     {
@@ -2033,12 +2205,17 @@ namespace ConfigMgrWebService
                     }
                 }
             }
-            return null;
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Get MDT roles from database (Application Pool identity needs access permissions to the specified MDT database)")]
         public List<string> GetMDTRoles(string secret)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct list object
             List<string> roleList = new List<string>();
 
@@ -2077,12 +2254,19 @@ namespace ConfigMgrWebService
                 }
             }
 
+            MethodEnd(method);
             return roleList;
         }
 
         [WebMethod(Description = "Get computer by asset tag from MDT database")]
         public string GetMDTComputerByAssetTag(string secret, string assetTag)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            string returnValue = string.Empty;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2093,23 +2277,23 @@ namespace ConfigMgrWebService
                 string identity = GetMDTComputerIdentity(connectionString, "AssetTag", assetTag);
                 if (!String.IsNullOrEmpty(identity))
                 {
-                    return identity;
-                }
-                else
-                {
-                    return string.Empty;
+                    returnValue = identity;
                 }
             }
-            else
-            {
-                //' Return null when secret key is not passed correctly
-                return null;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Check if a computer with a specific MAC address exists in MDT database")]
         public string GetMDTComputerByMacAddress(string secret, string macAddress)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            string returnValue = string.Empty;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2120,23 +2304,23 @@ namespace ConfigMgrWebService
                 string identity = GetMDTComputerIdentity(connectionString, "MacAddress", macAddress);
                 if (!String.IsNullOrEmpty(identity))
                 {
-                    return identity;
-                }
-                else
-                {
-                    return string.Empty;
+                    returnValue = identity;
                 }
             }
-            else
-            {
-                //' Return null when secret key is not passed correctly
-                return null;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Get computer by serial number from MDT database")]
         public string GetMDTComputerBySerialNumber(string secret, string serialNumber)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            string returnValue = string.Empty;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2147,23 +2331,23 @@ namespace ConfigMgrWebService
                 string identity = GetMDTComputerIdentity(connectionString, "SerialNumber", serialNumber);
                 if (!String.IsNullOrEmpty(identity))
                 {
-                    return identity;
-                }
-                else
-                {
-                    return string.Empty;
+                    returnValue = identity;
                 }
             }
-            else
-            {
-                //' Return null when secret key is not passed correctly
-                return null;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Check if a computer with a specific UUID exists in MDT database")]
         public string GetMDTComputerByUUID(string secret, string uuid)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            string returnValue = string.Empty;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2174,23 +2358,23 @@ namespace ConfigMgrWebService
                 string identity = GetMDTComputerIdentity(connectionString, "UUID", uuid);
                 if (!String.IsNullOrEmpty(identity))
                 {
-                    return identity;
-                }
-                else
-                {
-                    return string.Empty;
+                    returnValue = identity;
                 }
             }
-            else
-            {
-                //' Return null when secret key is not passed correctly
-                return null;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Get MDT roles with detailed information for a specific computer")]
         public List<MDTRole> GetMDTDetailedComputerRoleMembership(string secret, string identity)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Construct List to hold all roles
+            List<MDTRole> roleList = new List<MDTRole>();
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2212,9 +2396,6 @@ namespace ConfigMgrWebService
                     command.Parameters.Add("@ID", SqlDbType.NVarChar).Value = identity;
                     command.CommandText = sqlString.ToString();
 
-                    //' Construct List to hold all roles
-                    List<MDTRole> roleList = new List<MDTRole>();
-
                     //' Invoke SQL command to retrieve roles
                     try
                     {
@@ -2229,35 +2410,35 @@ namespace ConfigMgrWebService
                                 roleList.Add(mdtRole);
                             }
                         }
-
-                        //' Cleanup and disconnect SQL connection
-                        command.Dispose();
-                        connection.Close();
-
-                        return roleList;
                     }
                     catch (Exception ex)
                     {
                         WriteEventLog(String.Format("An error occured when attempting to get role memberships. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                        return null;
                     }
+
+                    //' Cleanup and disconnect SQL connection
+                    command.Dispose();
+                    connection.Close();
                 }
                 catch (SqlException ex)
                 {
                     WriteEventLog(String.Format("An error occured while connecting to SQL server hosting MDT database. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                    return null;
                 }
             }
-            else
-            {
-                //' Return null when secret key is not passed correctly
-                return null;
-            }
+
+            MethodEnd(method);
+            return roleList;
         }
 
         [WebMethod(Description = "Get a list of MDT roles for a specific computer")]
         public List<string> GetMDTComputerRoleMembership(string id, string secret)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Construct List to hold all roles
+            List<string> roleList = new List<string>();
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2279,9 +2460,6 @@ namespace ConfigMgrWebService
                     command.Parameters.Add("@ID", SqlDbType.NVarChar).Value = id;
                     command.CommandText = sqlString.ToString();
 
-                    //' Construct List to hold all roles
-                    List<string> roleList = new List<string>();
-
                     //' Invoke SQL command to retrieve roles
                     try
                     {
@@ -2293,58 +2471,58 @@ namespace ConfigMgrWebService
                                 roleList.Add(reader["Role"].ToString());
                             }
                         }
-
-                        //' Cleanup and disconnect SQL connection
-                        command.Dispose();
-                        connection.Close();
-
-                        return roleList;
                     }
                     catch (Exception ex)
                     {
                         WriteEventLog(String.Format("An error occured when attempting to get role memberships. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                        return null;
                     }
+
+                    //' Cleanup and disconnect SQL connection
+                    command.Dispose();
+                    connection.Close();
                 }
                 catch (SqlException ex)
                 {
                     WriteEventLog(String.Format("An error occured while connecting to SQL server hosting MDT database. Error message: {0}", ex.Message), EventLogEntryType.Error);
-                    return null;
                 }
             }
-            else
-            {
-                //' Return null when secret key is not passed correctly
-                return null;
-            }
+
+            MethodEnd(method);
+            return roleList;
         }
 
         [WebMethod(Description = "Get MDT computer name by computer identity")]
         public string GetMDTComputerNameByIdentity(string secret, string identity)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            string returnValue = string.Empty;
+
             //' Validate secret key
             if (secret == secretKey)
             {
                 string computerIdentity = GetMDTComputerName(identity);
                 if (!String.IsNullOrEmpty(computerIdentity))
                 {
-                    return computerIdentity;
-                }
-                else
-                {
-                    return string.Empty;
+                    returnValue = computerIdentity;
                 }
             }
-            else
-            {
-                //' Return empty string when secret key is not passed correctly
-                return string.Empty;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Add computer identified by an asset tag to a specific MDT role")]
         public bool AddMDTRoleMemberByAssetTag(string roleName, string computerName, string assetTag, string secret, bool createComputer, string identity = null)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2356,25 +2534,27 @@ namespace ConfigMgrWebService
 
                 if (createComputer == true)
                 {
-                    bool result = BeginMDTRoleMember(dictionary, computerName, roleName);
-                    return result;
+                    returnValue = BeginMDTRoleMember(dictionary, computerName, roleName);
                 }
                 else
                 {
-                    bool result = BeginMDTRoleMember(dictionary, computerName, roleName, false, identity);
-                    return result;
+                    returnValue = BeginMDTRoleMember(dictionary, computerName, roleName, false, identity);
                 }
             }
-            else
-            {
-                //' Return false when secret key is not passed correctly
-                return false;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Add computer identified by a serial number to a specific MDT role")]
         public bool AddMDTRoleMemberBySerialNumber(string roleName, string computerName, string serialNumber, string secret, bool createComputer, string identity = null)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2386,26 +2566,28 @@ namespace ConfigMgrWebService
 
                 if (createComputer == true)
                 {
-                    bool result = BeginMDTRoleMember(dictionary, computerName, roleName);
-                    return result;
+                    returnValue = BeginMDTRoleMember(dictionary, computerName, roleName);
                 }
                 else
                 {
-                    bool result = BeginMDTRoleMember(dictionary, computerName, roleName, false, identity);
-                    return result;
+                    returnValue = BeginMDTRoleMember(dictionary, computerName, roleName, false, identity);
                 }
 
             }
-            else
-            {
-                //' Return false when secret key is not passed correctly
-                return false;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Add computer identified by a MAC address to a specific MDT role")]
         public bool AddMDTRoleMemberByMacAddress(string roleName, string computerName, string macAddress, string secret, bool createComputer, string identity = null)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2417,25 +2599,27 @@ namespace ConfigMgrWebService
 
                 if (createComputer == true)
                 {
-                    bool result = BeginMDTRoleMember(dictionary, computerName, roleName);
-                    return result;
+                    returnValue = BeginMDTRoleMember(dictionary, computerName, roleName);
                 }
                 else
                 {
-                    bool result = BeginMDTRoleMember(dictionary, computerName, roleName, false, identity);
-                    return result;
+                    returnValue = BeginMDTRoleMember(dictionary, computerName, roleName, false, identity);
                 }
             }
-            else
-            {
-                //' Return false when secret key is not passed correctly
-                return false;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Add computer identified by an UUID to a specific MDT role")]
         public bool AddMDTRoleMemberByUUID(string roleName, string computerName, string uuid, string secret, bool createComputer, string identity = null)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2447,25 +2631,27 @@ namespace ConfigMgrWebService
 
                 if (createComputer == true)
                 {
-                    bool result = BeginMDTRoleMember(dictionary, computerName, roleName);
-                    return result;
+                    returnValue = BeginMDTRoleMember(dictionary, computerName, roleName);
                 }
                 else
                 {
-                    bool result = BeginMDTRoleMember(dictionary, computerName, roleName, false, identity);
-                    return result;
+                    returnValue = BeginMDTRoleMember(dictionary, computerName, roleName, false, identity);
                 }
             }
-            else
-            {
-                //' Return false when secret key is not passed correctly
-                return false;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Add computer to a given MDT role (supports multiple indentification types)")]
         public bool AddMDTRoleMember(string computerName, string role, string secret, string assetTag = null, string serialNumber = null, string macAddress = null, string uuid = null, string description = null)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
@@ -2476,30 +2662,30 @@ namespace ConfigMgrWebService
                 dictionary.Add("UUID", uuid);
                 dictionary.Add("Description", description);
 
-                bool result = BeginMDTRoleMember(dictionary, computerName, role);
-                return result;
+                returnValue = BeginMDTRoleMember(dictionary, computerName, role);
             }
-            else
-            {
-                //' Return false when secret key is not passed correctly
-                return false;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Remove MDT computer from all associated roles")]
         public bool RemoveMDTComputerFromRoles(string secret, string identity)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
+            //' Variable for return value
+            bool returnValue = false;
+
             //' Validate secret key
             if (secret == secretKey)
             {
-                bool removeResult = RemoveMDTComputerRoles(identity);
-                return removeResult;
+                returnValue = RemoveMDTComputerRoles(identity);
             }
-            else
-            {
-                //' Return false when secret key is not passed correctly
-                return false;
-            }
+
+            MethodEnd(method);
+            return returnValue;
         }
 
         private bool BeginMDTRoleMember(Dictionary<string, string> dictionary, string computerName, string roleName, bool createComputer = true, string identity = null)
