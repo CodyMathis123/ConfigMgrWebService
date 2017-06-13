@@ -902,6 +902,9 @@ namespace ConfigMgrWebService
         [WebMethod(Description = "Get Driver Package information by computer model")]
         public List<CMDriverPackage> GetCMDriverPackageByModel(string secret, string model)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct list for driver package ids
             List<CMDriverPackage> pkgList = new List<CMDriverPackage>();
 
@@ -937,18 +940,18 @@ namespace ConfigMgrWebService
                         pkgList.Add(drvPkg);
                     }
                 }
+            }
 
-                return pkgList;
-            }
-            else
-            {
-                return pkgList;
-            }
+            MethodEnd(method);
+            return pkgList;
         }
 
         [WebMethod(Description = "Get a filtered list of packages")]
         public List<CMPackage> GetCMPackage(string secret, string filter)
         {
+            MethodBase method = MethodBase.GetCurrentMethod();
+            MethodBegin(method);
+
             //' Construct list for package ids
             List<CMPackage> pkgList = new List<CMPackage>();
 
@@ -990,13 +993,10 @@ namespace ConfigMgrWebService
                         pkgList.Add(pkg);
                     }
                 }
+            }
 
-                return pkgList;
-            }
-            else
-            {
-                return pkgList;
-            }
+            MethodEnd(method);
+            return pkgList;
         }
 
         [WebMethod(Description = "Check for 'Unknown' device record by UUID (SMBIOS GUID)")]
@@ -1539,8 +1539,8 @@ namespace ConfigMgrWebService
                 }
             }
 
-            return returnValue;
             MethodEnd(method);
+            return returnValue;
         }
 
         [WebMethod(Description = "Remove a computer in Active Directory from a specific group")]
@@ -2055,6 +2055,7 @@ namespace ConfigMgrWebService
                     WriteEventLog(String.Format("Could not enumerate OUs. Error message: {0}", ex.Message), EventLogEntryType.Error);
                 }
             }
+            MethodEnd(method);
             return orgUnits;
         }
 
@@ -2093,6 +2094,8 @@ namespace ConfigMgrWebService
                     adSites.Add(new ADSites(site.Name.ToString(), servers, subnets));
                 }
             }
+
+            MethodEnd(method);
             return adSites;
         }
 
